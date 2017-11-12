@@ -29,6 +29,21 @@ filetype plugin indent on    " required
 " Put your non-Plugin stuff after this line
 " VUNDLE RELATED CODE ENDS
 
-set cursorline
-set colorcolumn=80
+" change cursor to a vertical bar in insert mode, and non-blinking cursor
+" block otherwise. 1: blinky block, 2; non-blinky block, 3:blinky underscore,
+" 4: non-blinky underscore, 5: blinky vertical bar, 6: non-blinky vertical bar
+au InsertEnter * silent execute "!echo -en \<esc>[5 q"
+au InsertLeave * silent execute "!echo -en \<esc>[2 q"
+
+" auto close different kind of brackets and have the cursor in between the
+" brackets in insert mode
+:inoremap ( ()<Esc>i
+:inoremap { {}<Esc>i
+:inoremap [ []<Esc>i
+
+set cursorline " mark the line of the cursor
+set colorcolumn=80 " line to mark 80th column
+set tabstop=4 " one tab to appear as 4 spaces
+set shiftwidth=4 " indents to appear as 4 spaces
 set autoindent
+set number " line numbers
