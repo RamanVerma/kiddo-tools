@@ -1,63 +1,74 @@
-set exrc    " load project specific vimrc potentially present at vim invocation dir
-set secure  " security option for non default vimrc files
-call pathogen#infect() " Enable pathogen package manager 
-call pathogen#helptags()
+" vim-plug plugin manager utility.
+" :PlugInstall to install the plugins; :PlugUpdate to update them
+" :PlugClean will remove unused plugins, and :PlugUpgrade will update vim-plug itself
+" Specify a directory for plugins
+" Avoid using standard vim 'plugin' directory
+call plug#begin('~/.vim/customPlugInLocation')
+
+" Code completion engine. Fetches https://github.com/Valloric/YouCompleteMe.git
+Plug 'valloric/YouCompleteMe'
+
+" Initialize plugin system
+" It will also automatically execute following commands
+" filetype plugin indent on
+" syntax enable
+" You will need to explicitly disable these settings after plug#end(), if needed
+" Do so, by adding following lines after plug#end()
+" filetype indent off
+" syntax off
+call plug#end()
+
+""" Cursor Style """
+" Highlight the line where cursor is
+set cursorline
+" Set line numbers
+set nu
+" Color column 80
+set colorcolumn=80
+" change cursor to a vertical bar in insert mode, and non-blinking cursor
+" block otherwise. 1: blinky block, 2; non-blinky block, 3:blinky underscore,
+" 4: non-blinky underscore, 5: blinky vertical bar, 6: non-blinky vertical bar
+au InsertEnter * silent execute "!echo -en \<esc>[6 q"
+au InsertLeave * silent execute "!echo -en \<esc>[5 q"
+
+""" Auto completing matching brackets """
+inoremap {<CR>  {<CR>}<Esc>O
+inoremap {      {}<Left>
+inoremap (      ()<Left>
+inoremap [      []<Left>
+inoremap <      <><Left>
+inoremap <<     <<<Space>
+inoremap "      ""<Left>
+inoremap '      ''<Left>
+
+""" Indentation Settings """
+" indentation without tabs
+set expandtab
+set shiftwidth=4
+set softtabstop=4
+" Enabling filetype based indentation explicitly
+if has("autocmd")
+    " Enable file type detection
+    " Use the default filetype settings, so that mail gets 'tw' set to 72,
+    " 'cindent' is on in C files, etc.
+    " Also load indent files, to automatically do language-dependent indenting.
+    filetype plugin indent on
+endif
+" custom indentation per filetype 
+autocmd FileType python setlocal expandtab shiftwidth=4 softtabstop=4
+
+""" Color settings
+highlight Search ctermfg=Black ctermbg=Red cterm=underline
 
 """ Search settings """
 set ignorecase " Ignore case by default
-set incsearch " Enable incremental search
+set incsearch " Enable incremental search. Shows matches as you type text to be searched
 set hlsearch " highlight searched for phrases
 
-""" UI settings """
-if has("mouse")
-    set mouse=a
-endif
-
-""" Text editing """
-set nocompatible	" Use Vim defaults (much better!)
-set bs=indent,eol,start		" allow backspacing over everything in insert mode
-set history=50
-set viminfo='100
-
-""" Visual cues """
-syntax on " syntax highlighting on
-set ruler " show the cursor position
-set showmatch " show matching brackets
-set matchtime=5 " how many tenths of a second to blink matching brackets for
-set scrolloff=5 " Keep 5 lines (top/bottom) for scope
-set sidescrolloff=5 " Keep 5 lines at the size
-set novisualbell " don't blink
-set nu           " use line numbers
-
-""" Color settings """
-highlight Normal ctermfg=Black ctermbg=White
-highlight Normal ctermfg=White ctermbg=Black
-highlight Search ctermfg=Black ctermbg=Red cterm=underline
-
-""" Indenting settings """
-set colorcolumn=80
-highlight ColorColumn ctermbg=blue
-set softtabstop=4
-set shiftwidth=4
-set expandtab
-set nosmartindent " smartindent (filetype indenting instead)
-set autoindent
-set cindent      
-set cinoptions=g0:0 " No indent for public: or case:
-set copyindent " but above all -- follow the conventions laid before us
-filetype plugin indent on " load filetype plugins and indent settings
-
-""" File type detection """
-augroup filetypedetect
-    au! BufRead,BufNewFile *.t setfiletype perl
-augroup END
-
-augroup Makefile
-    au!
-    au BufReadPre Makefile set noexpandtab
-augroup END
-
 """ Ease of use """
+" Use F3 to toggle between paste mode and normal mode.
+" Auto indent is disabled in paste mode. Useful as text to be pasted is mostly formatted already
+set pastetoggle=<F3>
 " When editing a file, always jump to the last cursor position
 autocmd BufReadPost *
 \ if line("'\"") > 0 && line ("'\"") <= line("$") |
@@ -65,9 +76,6 @@ autocmd BufReadPost *
 \ endif
 " Make C-G display full path of a file
 set statusline+=%F
-
-""" Clipboard actions using vim yank and cut
-set clipboard=unnamed
 
 """ ctags
 nnoremap <silent> <Leader>b :TagbarToggle<CR>
@@ -87,7 +95,7 @@ map <C-\> :tab split <CR>:exec("tag ".expand("<cword>"))<CR>
 """ advantage over the native '!' command.
 """ Another feature is that while in the output buffer, we can re run the
 """ command using <localleader>r
-""" Generally, <localeader> key is '\' 
+""" Generally, <localeader> key is '\'
 function! s:ExecuteInShell(command)
 let command = join(map(split(a:command), 'expand(v:val)'))
 " check if buffer exists, otherwise create one
@@ -103,5 +111,3 @@ silent! execute 'nnoremap <silent> <buffer> <LocalLeader>r :call <SID>ExecuteInS
 echo 'Shell command ' . command . ' executed.'
 endfunction
 command! -complete=shellcmd -nargs=+ Shell call s:ExecuteInShell(<q-args>)
-
-" source $HOME/.vim/plugin/buildva.vim
