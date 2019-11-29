@@ -1,0 +1,168 @@
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""" Plugins installed using vim-plug plugin manager
+""" Important commands for vim-plug
+""" PlugInstall [name ...] [#threads] 	Install plugins
+""" PlugUpdate [name ...] [#threads] 	Install or update plugins
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+call plug#begin()
+"" go plugin for vim
+Plug 'fatih/vim-go', { 'do': ':GoInstallBinaries' }
+"" helps look at all functions declared in a file(:GoDecls) / dir(:GoDeclsDir)
+Plug 'ctrlpvim/ctrlp.vim'
+call plug#end()
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""" Remap leader key to ','
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+let mapleader = ','
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"""cursor Style """
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Highlight the line where cursor is
+set cursorline
+" Set line numbers
+set nu
+" Color column 80
+set colorcolumn=80
+" change cursor to a vertical bar in insert mode, and non-blinking cursor
+" block otherwise. 1: blinky block, 2; non-blinky block, 3:blinky underscore,
+" 4: non-blinky underscore, 5: blinky vertical bar, 6: non-blinky vertical bar
+au InsertEnter * silent execute "!echo -en \<esc>[6 q"
+au InsertLeave * silent execute "!echo -en \<esc>[5 q"
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""" Auto completing matching brackets """
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+inoremap {<CR>  {<CR>}<Esc>O
+inoremap {      {}<Left>
+inoremap (      ()<Left>
+inoremap [      []<Left>
+inoremap <      <><Left>
+inoremap <<     <<<Space>
+inoremap "      ""<Left>
+inoremap '      ''<Left>
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""" Indentation Settings """
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" indentation without tabs
+set expandtab
+set shiftwidth=4
+set softtabstop=4
+" Enabling filetype based indentation explicitly
+if has("autocmd")
+    " Enable file type detection
+    " Use the default filetype settings, so that mail gets 'tw' set to 72,
+    " 'cindent' is on in C files, etc.
+    " Also load indent files, to automatically do language-dependent indenting.
+    filetype plugin indent on
+endif
+" custom indentation per filetype 
+autocmd FileType python setlocal expandtab shiftwidth=4 softtabstop=4
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""" Color and Syntax highlighting settings
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+highlight Search ctermfg=Black ctermbg=Red cterm=underline
+filetype plugin on
+syntax on
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""" Search settings """
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+set ignorecase " Ignore case by default
+set incsearch " Enable incremental search. Shows matches as you type text to be searched
+set hlsearch " highlight searched for phrases
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""" vim-go customizations and shortcuts
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""" No need to save file before calling :make or :GoBuild (vim-go feature)
+set autowrite
+
+""" Go file syntax highlighting
+let g:go_highlight_types = 1
+let g:go_highlight_fields = 1
+let g:go_highlight_functions = 1
+let g:go_highlight_function_calls = 1
+let g:go_highlight_operators = 1
+let g:go_highlight_extra_types = 1
+let g:go_highlight_build_constraints = 1
+let g:go_highlight_generate_tags = 1
+let g:go_auto_sameids = 1
+
+""" Don't expand tab into spaces for go files. Tab = 4 spaces
+autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4 
+
+""" Text objects in vim-go. 'if' (in function) and 'af' (a function)
+"" These are useful while editing the content of a function, or content + declaration
+"" Include function's documentation while selecting using 'af'
+let g:go_textobj_include_function_doc = 1
+
+""" Settings for gometalinter
+"" Checkers to be called when :GoMetaLinter is run explicitly
+let g:go_metalinter_enabled = ['vet', 'golint', 'errcheck']
+"" Enable gometalinter on save
+let g:go_metalinter_autosave = 1
+"" Customize checkers to be called in :GoMetaLinter invoked automatically during save
+let g:go_metalinter_autosave_enabled = ['vet', 'golint']
+"" Timeout for gometalint when invoked automatically during save
+let g:go_metalinter_deadline = "5s"
+
+"+++++++++++++++++++++++++++++++ vim-go SHORTCUTS ++++++++++++++++++++++++++++++"
+"++++++++++++++ Build / Run / Test +++++++++++++++++++"
+"" Shortcut for :GoRun while editing Go files
+autocmd FileType go nmap <leader>r  <Plug>(go-run)
+"" Shortcut for :GoTest while editing Go files
+autocmd FileType go nmap <leader>t  <Plug>(go-test)
+" Set GoTest to timeout after 10 sec. Useful for non async vim
+let g:go_test_timeout = '10s'
+"" Shortcut for :GoBuild / :GoTestCompile while editing Go files
+" run :GoBuild or :GoTestCompile based on the go file(source file or test file)
+" :GoTestCompile is used to build Test* functions. It does not run the test.
+function! s:build_go_files()
+  let l:file = expand('%')
+  if l:file =~# '^\f\+_test\.go$'
+    call go#test#Test(0, 1)
+  elseif l:file =~# '^\f\+\.go$'
+    call go#cmd#Build(0)
+  endif
+endfunction
+autocmd FileType go nmap <leader>b :<C-u>call <SID>build_go_files()<CR>
+"" Move across rows in quickfix window. this window opens during :GoBuild :GoInstall and :GoTest etc
+"" There is only 1 quickfix window for all open buffers. On the contrary,
+"" locationwindow(s) are per buffer
+map <C-n> :cnext<CR>
+map <C-m> :cprevious<CR>
+nnoremap <leader>a :cclose<CR>
+"" Shortcut for :GoCoverageToggle while editing Go files
+autocmd FileType go nmap <leader>c <Plug>(go-coverage-toggle)
+
+"++++++++++++++ Navigation +++++++++++++++++++"
+"" Go to Definition Command: :GoDef Shortcut: Ctrl-]
+"" Go back to previous location in reference to GoDef Command: :GoDefPop Shortcut: Ctrl-t
+"" See all the jump history and jump to specific point in history Command: :GoDefStack
+"" Underlying tool used by :GoDef command to query the definition. Other option is
+"" 'guru' but it can be slow at times
+let g:go_def_mode = 'godef'
+"" Alternate between a file and its corresponding test file.
+"" command: :GoAlternate Shortcut :A 
+autocmd Filetype go command! -bang A call go#alternate#Switch(<bang>0, 'edit')
+"" command: :vsp | GoAlternate Shortcut :AV
+autocmd Filetype go command! -bang AV call go#alternate#Switch(<bang>0, 'vsplit')
+"" command: :sp | GoAlternate Shortcut :AS
+autocmd Filetype go command! -bang AS call go#alternate#Switch(<bang>0, 'split')
+"" Open the alternate file in a new tab. Shortcut :AT 
+autocmd Filetype go command! -bang AT call go#alternate#Switch(<bang>0, 'tabe')
+"" Plugin ctrlp provides two commands to display a list of all functions(or
+"" types) declared in a file (:GoDecls) or the current directory(:GoDeclsDir)
+"" These commands open a navigable list to jump to the declaration of interet 
+"" and it also provides filtering ability
+"" Following option will search for both function and type declarations
+let g:go_decls_includes = "func,type"
+"" vim-go provides built in navigation features to jump from one function to
+"" next using ]] and to previous function using [[
+"" Operators can be added to function jump shortcuts like 3]] will jump to 3rd
+"" function from top of the file. Delete, copy and yank can also be done like,
+"" d]] will delete everything from now to next function.
