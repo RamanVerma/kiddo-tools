@@ -9,6 +9,8 @@ call plug#begin()
 Plug 'fatih/vim-go', { 'do': ':GoInstallBinaries' }
 "" helps look at all functions declared in a file(:GoDecls) / dir(:GoDeclsDir)
 Plug 'ctrlpvim/ctrlp.vim'
+"" Install NerdTree
+Plug 'scrooloose/nerdtree'
 call plug#end()
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -76,6 +78,30 @@ set incsearch " Enable incremental search. Shows matches as you type text to be 
 set hlsearch " highlight searched for phrases
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""" NerdTree shortcuts
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"" Open and Close NerdTree with leader-f. NerdTree will open at some parent dir
+"" where version control is found.
+nnoremap <Leader>f :NERDTreeToggleVCS<Enter>
+"" Add some UI to NerdTree
+let NERDTreeMinimalUI = 1
+let NERDTreeDirArrows = 1
+"" Open selected file in vertial split: s
+"" Open selected file in horizontal split: i
+"" Jump to root node: P
+"" Jump to current node's parent: p
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""" CtrlP fuzzy finder shortcuts
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""" Open CtrlP fuzzy finder with shortcut Ctrl-p
+""" Toggle the search criteria between file path and file name: Ctrl-d
+""" (This can be verified in the row above the one where you write search text)
+""" Open the selected file in same buffer: Enter key
+""" Open the selected file in vertical split: Ctrl-v
+""" Open the selected file in horizontal split: Ctrl-x
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """ vim-go customizations and shortcuts
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """ No need to save file before calling :make or :GoBuild (vim-go feature)
@@ -90,6 +116,7 @@ let g:go_highlight_operators = 1
 let g:go_highlight_extra_types = 1
 let g:go_highlight_build_constraints = 1
 let g:go_highlight_generate_tags = 1
+"" Highlight all occurences of the identifier under cursor. Command: GoSameIds
 let g:go_auto_sameids = 1
 
 """ Don't expand tab into spaces for go files. Tab = 4 spaces
@@ -166,3 +193,40 @@ let g:go_decls_includes = "func,type"
 "" Operators can be added to function jump shortcuts like 3]] will jump to 3rd
 "" function from top of the file. Delete, copy and yank can also be done like,
 "" d]] will delete everything from now to next function.
+
+"++++++++++++++ Documentation Lookup +++++++++++++++++++"
+"" vim-go provides a neat way to look up documentation for any function.
+"" Command :GoDef SHortcut: K (NOTE: this shortcut overrides default for vim
+"" that would have called man command)
+
+"++++++++++++++ Tools to understand GO code +++++++++++++++++++"
+"" vim-go can show the signature of a function(or a valid identifier) under the 
+"" cursor with the command: :GoInfo (This is a quicker alternative to jumping
+"" to the function definition using Ctrl-] and back with Ctrl-t)
+"" Shortcut to :GoInfo for go files
+autocmd FileType go nmap <Leader>i <Plug>(go-info)
+"" Automatically call :GoInfo when cursor is placed at a valid identifier
+let g:go_auto_type_info = 1
+"" Time after which :GoInfo will be called
+set updatetime=100
+
+"" vim-go uses a tool called guru used for naviagation and understanding GO code
+"" guru provides a command to visualize information about a type. This command
+"" shows the members of the struct, its methods and its definition. Command: :GoDescribe
+
+"" guru also provides a command for finding all the interfaces a type implements
+"" It lists all the interfaces that the type implements. Command: :GoImplements
+
+"" guru provides a command to find all the places that refer to an identifier
+"" under the cursor. Command: :GoReferrers
+"" List all files in the package to which current file belongs Command: GoFiles
+"" List all dependencies for the current file Command: GoDeps
+
+"" guru provides a way to find all type of values that can be returned as an
+"" errors from a method. This is useful while ensuring all different types of 
+"" errors have been handled. This command requires guru scope to have been set. 
+"" command: :GoWhicherrs
+
+"" guru has a peers mode to understand where a channel os defined, where
+"" values are sent to the channel and where are the values received from.
+"" This command requires guru scope to have been set. command: :GoChannelPeers
